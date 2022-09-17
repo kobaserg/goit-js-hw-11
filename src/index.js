@@ -3,12 +3,15 @@ import { fetchPhoto } from './fetchPhoto';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 export { renderPhotoGallery };
+import Notiflix from 'notiflix';
+import 'notiflix/dist/notiflix-3.2.5.min.css';
 
 const axios = require('axios');
 const form = document.querySelector('#search-form');
 const gallery = document.querySelector('.gallery');
 
 let fieldForSearchPhoto = '';
+clearGallery();
 
 form.addEventListener('input', onInputForm);
 form.addEventListener('submit', onSubmitForm);
@@ -20,11 +23,21 @@ function onInputForm(event) {
 
 function onSubmitForm(event) {
   event.preventDefault();
+  clearGallery();
   fetchPhoto(fieldForSearchPhoto);
 }
 
 function renderPhotoGallery(photos) {
-  const markup = photos.data.hits
+  const arrayPhoto = photos.data.hits;
+  console.log(arrayPhoto.length);
+  if (arrayPhoto.length === 0) {
+    Notiflix.Notify.failure(
+      'Sorry, there are no images matching your search query. Please try again.'
+    );
+    form.reset();
+  }
+
+  const markup = arrayPhoto
     .map(photo => {
       const previewImage = photo.webformatURL;
       const alt = photo.tags;
@@ -40,16 +53,16 @@ function renderPhotoGallery(photos) {
       </a>     
     <div class="info">
       <p class="info-item">
-        <br>Likes</br>${likes}
+        <b class="item">Likes</b><br>${likes}
       </p>
       <p class="info-item">
-        <br>Views</br>${views}
+        <b class="item">Views</b><br>${views}
       </p>
       <p class="info-item">
-        <br>Comments</br>${comments}
+        <b class="item">Comments</b><br>${comments}
       </p>
       <p class="info-item">
-        <br>Downloads</br>${downloads}
+        <b class="item">Downloads</b><br>${downloads}
       </p>
     </div>
   </div>`;
@@ -62,4 +75,9 @@ function renderPhotoGallery(photos) {
     heightRatio: 0.9,
     scrollZoomFactor: 0.1,
   });
+}
+
+function clearGallery() {
+  console.log('Очистка галереи');
+  gallery.innerHTML = '';
 }
