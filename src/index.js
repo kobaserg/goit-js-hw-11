@@ -1,3 +1,6 @@
+// проверка на общее число
+//
+
 import './css/styles.css';
 import { fetchPhoto } from './fetchPhoto';
 import SimpleLightbox from 'simplelightbox';
@@ -16,6 +19,8 @@ clearGallery();
 btnLoadMore.style.visibility = 'hidden';
 let page = 1;
 let perPage = 40;
+let totalHits = 0;
+let currentHits = perPage;
 
 form.addEventListener('input', onInputForm);
 form.addEventListener('submit', onSubmitForm);
@@ -34,6 +39,9 @@ function onSubmitForm(event) {
 }
 
 function onLoadMore(event) {
+  currentHits += perPage;
+  console.log('Total Hits ==>', totalHits);
+  console.log('Current Hits ==> ', currentHits);
   page += 1;
   console.log('LOAD MORE Page ==> ', page);
   event.preventDefault();
@@ -43,6 +51,13 @@ function onLoadMore(event) {
 }
 
 function renderPhotoGallery(photos) {
+  totalHits = photos.data.totalHits;
+  console.log(totalHits);
+  Notiflix.Notify.info(
+    `Hooray! We found ${totalHits} totalHits images. Shown from 1 to ${
+      page * perPage
+    }`
+  );
   const arrayPhoto = photos.data.hits;
   console.log(arrayPhoto.length);
   if (arrayPhoto.length === 0) {
@@ -88,12 +103,23 @@ function renderPhotoGallery(photos) {
     .join('');
   gallery.insertAdjacentHTML('beforeend', markup);
   btnLoadMore.style.visibility = 'visible';
+  console.log(
+    `Проверка на общее колво : Всего ${totalHits} , текущий ${currentHits}`
+  );
   const lightbox = new SimpleLightbox('.gallery a', {
     captionDelay: 250,
     widthRatio: 0.6,
     heightRatio: 0.9,
     scrollZoomFactor: 0.1,
   });
+
+  if (currentHits >= totalHits) {
+    Notiflix.Notify.warning(
+      `We're sorry, but you've reached the end of search results.`
+    );
+    btnLoadMore.style.visibility = 'hidden';
+    return;
+  }
 }
 
 function clearGallery() {
