@@ -9,12 +9,17 @@ import 'notiflix/dist/notiflix-3.2.5.min.css';
 const axios = require('axios');
 const form = document.querySelector('#search-form');
 const gallery = document.querySelector('.gallery');
+const btnLoadMore = document.querySelector('.load-more');
 
 let fieldForSearchPhoto = '';
 clearGallery();
+btnLoadMore.style.visibility = 'hidden';
+let page = 1;
+let perPage = 40;
 
 form.addEventListener('input', onInputForm);
 form.addEventListener('submit', onSubmitForm);
+btnLoadMore.addEventListener('click', onLoadMore);
 
 function onInputForm(event) {
   fieldForSearchPhoto = event.target.value;
@@ -22,9 +27,19 @@ function onInputForm(event) {
 }
 
 function onSubmitForm(event) {
+  page = 1;
   event.preventDefault();
   clearGallery();
-  fetchPhoto(fieldForSearchPhoto);
+  fetchPhoto(fieldForSearchPhoto, page, perPage);
+}
+
+function onLoadMore(event) {
+  page += 1;
+  console.log('LOAD MORE Page ==> ', page);
+  event.preventDefault();
+
+  btnLoadMore.style.visibility = 'hidden';
+  fetchPhoto(fieldForSearchPhoto, page, perPage);
 }
 
 function renderPhotoGallery(photos) {
@@ -34,7 +49,10 @@ function renderPhotoGallery(photos) {
     Notiflix.Notify.failure(
       'Sorry, there are no images matching your search query. Please try again.'
     );
+    fieldForSearchPhoto = '';
+    btnLoadMore.style.visibility = 'hidden';
     form.reset();
+    return;
   }
 
   const markup = arrayPhoto
@@ -69,6 +87,7 @@ function renderPhotoGallery(photos) {
     })
     .join('');
   gallery.insertAdjacentHTML('beforeend', markup);
+  btnLoadMore.style.visibility = 'visible';
   const lightbox = new SimpleLightbox('.gallery a', {
     captionDelay: 250,
     widthRatio: 0.6,
