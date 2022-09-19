@@ -33,7 +33,10 @@ function onSubmitForm(event) {
   currentHits = perPage;
   event.preventDefault();
   clearGallery();
-  fetchPhoto(fieldForSearchPhoto, page, perPage);
+  fieldForSearchPhoto = fieldForSearchPhoto.trim();
+  if (fieldForSearchPhoto !== '') {
+    fetchPhoto(fieldForSearchPhoto, page, perPage);
+  } else Notiflix.Notify.warning('Enter a filter to search for an image');
 }
 
 function onLoadMore(event) {
@@ -104,13 +107,16 @@ function renderPhotoGallery(photos) {
     .join('');
   gallery.insertAdjacentHTML('beforeend', markup);
   btnLoadMore.style.visibility = 'visible';
-  // установление scroll smooth со скроллом экрана вверх с корректировкой позиции на экране
-  const { height: cardHeight } =
-    gallery.firstElementChild.getBoundingClientRect();
-  window.scrollBy({
-    top: cardHeight * 2 - 160,
-    behavior: 'smooth',
-  });
+  // установление scroll smooth со скроллом экрана вверх после пролистывания первой страницы
+  if (page > 1) {
+    const { height: cardHeight } =
+      gallery.firstElementChild.getBoundingClientRect();
+    window.scrollBy({
+      top: cardHeight * 2,
+      behavior: 'smooth',
+    });
+  }
+
   // подключение SimpleLightbox
   const lightbox = new SimpleLightbox('.gallery a', {
     captionDelay: 250,
