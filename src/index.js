@@ -37,9 +37,9 @@ function onSubmitForm(event) {
 }
 
 function onLoadMore(event) {
+  event.preventDefault();
   currentHits += perPage;
   page += 1;
-  event.preventDefault();
 
   btnLoadMore.style.visibility = 'hidden';
   fetchPhoto(fieldForSearchPhoto, page, perPage);
@@ -122,7 +122,6 @@ function renderPhotoGallery(photos) {
   if (page > 1) lightbox.refresh();
 
   // проверка и уведомление на окончание просмотра доступных изображений по фильтру с деактивацией кнопки Load More
-
   if (currentHits >= totalHits) {
     Notiflix.Notify.warning(
       `We're sorry, but you've reached the end of search results.`
