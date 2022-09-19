@@ -28,10 +28,12 @@ function onInputForm(event) {
 }
 
 function onSubmitForm(event) {
+  event.preventDefault();
+  btnLoadMore.style.visibility = 'hidden';
   page = 1;
   totalHits = 0;
   currentHits = perPage;
-  event.preventDefault();
+
   clearGallery();
   fieldForSearchPhoto = fieldForSearchPhoto.trim();
   if (fieldForSearchPhoto !== '') {
