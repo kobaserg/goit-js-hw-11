@@ -36,7 +36,10 @@ function onSubmitForm(event) {
   fieldForSearchPhoto = fieldForSearchPhoto.trim();
   if (fieldForSearchPhoto !== '') {
     fetchPhoto(fieldForSearchPhoto, page, perPage);
-  } else Notiflix.Notify.warning('Enter a filter to search for an image');
+  } else {
+    clearGallery();
+    Notiflix.Notify.warning('Enter a filter to search for an image');
+  }
 }
 
 function onLoadMore(event) {
