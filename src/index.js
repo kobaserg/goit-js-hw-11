@@ -104,7 +104,7 @@ function renderPhotoGallery(photos) {
     .join('');
   gallery.insertAdjacentHTML('beforeend', markup);
   btnLoadMore.style.visibility = 'visible';
-  // установление scroll smooth со скроллом экрана до границы новой страницы загрузки
+  // установление scroll smooth со скроллом экрана вверх с корректировкой позиции на экране
   const { height: cardHeight } =
     gallery.firstElementChild.getBoundingClientRect();
   window.scrollBy({
@@ -121,7 +121,7 @@ function renderPhotoGallery(photos) {
   // refresh lightbox при загрузке новой страницы галереи после первой. Зачем ?? Не очень понятно, вероятно для освобождения памяти??
   if (page > 1) lightbox.refresh();
 
-  // проверка и уведомление на окончание просмотра доступных изображений по фильтру
+  // проверка и уведомление на окончание просмотра доступных изображений по фильтру с деактивацией кнопки Load More
 
   if (currentHits >= totalHits) {
     Notiflix.Notify.warning(
