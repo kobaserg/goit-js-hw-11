@@ -1,6 +1,3 @@
-// проверка на общее число
-//
-
 import './css/styles.css';
 import { fetchPhoto } from './fetchPhoto';
 import SimpleLightbox from 'simplelightbox';
@@ -28,11 +25,12 @@ btnLoadMore.addEventListener('click', onLoadMore);
 
 function onInputForm(event) {
   fieldForSearchPhoto = event.target.value;
-  console.log(fieldForSearchPhoto);
 }
 
 function onSubmitForm(event) {
   page = 1;
+  totalHits = 0;
+  currentHits = perPage;
   event.preventDefault();
   clearGallery();
   fetchPhoto(fieldForSearchPhoto, page, perPage);
@@ -40,10 +38,7 @@ function onSubmitForm(event) {
 
 function onLoadMore(event) {
   currentHits += perPage;
-  console.log('Total Hits ==>', totalHits);
-  console.log('Current Hits ==> ', currentHits);
   page += 1;
-  console.log('LOAD MORE Page ==> ', page);
   event.preventDefault();
 
   btnLoadMore.style.visibility = 'hidden';
@@ -52,14 +47,9 @@ function onLoadMore(event) {
 
 function renderPhotoGallery(photos) {
   totalHits = photos.data.totalHits;
-  console.log(totalHits);
-  Notiflix.Notify.info(
-    `Hooray! We found ${totalHits} totalHits images. Shown from 1 to ${
-      page * perPage
-    }`
-  );
   const arrayPhoto = photos.data.hits;
-  console.log(arrayPhoto.length);
+  // Проверка на доступность изображений по выбранному фильтру
+  // Очистка формы для ввода фильтра
   if (arrayPhoto.length === 0) {
     Notiflix.Notify.failure(
       'Sorry, there are no images matching your search query. Please try again.'
@@ -68,6 +58,18 @@ function renderPhotoGallery(photos) {
     btnLoadMore.style.visibility = 'hidden';
     form.reset();
     return;
+  } else {
+    // вывод информации об общем кол-ве доступных изображений и текущем кол-ве полученых изображений
+    // проверка на корректное кол-во доступных для скачивания изображений
+    if (currentHits >= totalHits) {
+      Notiflix.Notify.info(
+        `Hooray! We found ${totalHits} totalHits images. Shown from 1 to ${totalHits}`
+      );
+    } else {
+      Notiflix.Notify.info(
+        `Hooray! We found ${totalHits} totalHits images. Shown from 1 to ${currentHits}`
+      );
+    }
   }
 
   const markup = arrayPhoto
@@ -79,7 +81,6 @@ function renderPhotoGallery(photos) {
       const comments = photo.comments;
       const downloads = photo.downloads;
       const largeImage = photo.largeImageURL;
-
       return `<div class="photo-card">
       <a class="gallery__item gallery__link" href="${largeImage}">
       <img class="gallery__image" src="${previewImage}" alt="${alt}" loading="lazy" />
@@ -103,15 +104,24 @@ function renderPhotoGallery(photos) {
     .join('');
   gallery.insertAdjacentHTML('beforeend', markup);
   btnLoadMore.style.visibility = 'visible';
-  console.log(
-    `Проверка на общее колво : Всего ${totalHits} , текущий ${currentHits}`
-  );
+  // установление scroll smooth со скроллом экрана до границы новой страницы загрузки
+  const { height: cardHeight } =
+    gallery.firstElementChild.getBoundingClientRect();
+  window.scrollBy({
+    top: cardHeight * 2 - 160,
+    behavior: 'smooth',
+  });
+  // подключение SimpleLightbox
   const lightbox = new SimpleLightbox('.gallery a', {
     captionDelay: 250,
     widthRatio: 0.6,
     heightRatio: 0.9,
     scrollZoomFactor: 0.1,
   });
+  // refresh lightbox при загрузке новой страницы галереи после первой. Зачем ?? Не очень понятно, вероятно для освобождения памяти??
+  if (page > 1) lightbox.refresh();
+
+  // проверка и уведомление на окончание просмотра доступных изображений по фильтру
 
   if (currentHits >= totalHits) {
     Notiflix.Notify.warning(
@@ -121,8 +131,7 @@ function renderPhotoGallery(photos) {
     return;
   }
 }
-
+// очистка галереи
 function clearGallery() {
-  console.log('Очистка галереи');
   gallery.innerHTML = '';
 }
