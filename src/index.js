@@ -115,16 +115,6 @@ function renderPhotoGallery(photos) {
 function makeMarcup(arrayPhoto) {
   const markup = arrayPhoto
     .map(photo => {
-      const {
-        webformatURL,
-        tags,
-        likes,
-        views,
-        comments,
-        downloads,
-        largeImageURL,
-      } = photo;
-
       return `<div class="photo-card">
       <a class="gallery__item gallery__link" href="${photo.largeImageURL}">
       <img class="gallery__image" src="${photo.webformatURL}" alt="${photo.tags}" loading="lazy" />
