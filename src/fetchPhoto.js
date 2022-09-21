@@ -10,7 +10,6 @@ async function fetchPhoto(name, page, perPage) {
     const response = await axios.get(
       `https://pixabay.com/api/?key=${API_KEY}&q=${name}${standartFilter}&page=${page}&per_page=${perPage}`
     );
-    // renderPhotoGallery(response);
     return response;
   } catch (error) {
     // обработка ошибки получения данных с бэкэнда
