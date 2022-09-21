@@ -2,9 +2,16 @@ import './css/styles.css';
 import { fetchPhoto } from './fetchPhoto';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
-export { renderPhotoGallery };
 import Notiflix from 'notiflix';
 import 'notiflix/dist/notiflix-3.2.5.min.css';
+
+// подключение SimpleLightbox
+const lightbox = new SimpleLightbox('.gallery a', {
+  captionDelay: 250,
+  widthRatio: 0.6,
+  heightRatio: 0.9,
+  scrollZoomFactor: 0.1,
+});
 
 const axios = require('axios');
 const form = document.querySelector('#search-form');
@@ -33,11 +40,12 @@ function onSubmitForm(event) {
   page = 1;
   totalHits = 0;
   currentHits = perPage;
-
   clearGallery();
   fieldForSearchPhoto = fieldForSearchPhoto.trim();
   if (fieldForSearchPhoto !== '') {
-    fetchPhoto(fieldForSearchPhoto, page, perPage);
+    fetchPhoto(fieldForSearchPhoto, page, perPage).then(response =>
+      renderPhotoGallery(response)
+    );
   } else {
     clearGallery();
     Notiflix.Notify.warning('Enter a filter to search for an image');
@@ -48,9 +56,10 @@ function onLoadMore(event) {
   event.preventDefault();
   currentHits += perPage;
   page += 1;
-
   btnLoadMore.style.visibility = 'hidden';
-  fetchPhoto(fieldForSearchPhoto, page, perPage);
+  fetchPhoto(fieldForSearchPhoto, page, perPage).then(response =>
+    renderPhotoGallery(response)
+  );
 }
 
 function renderPhotoGallery(photos) {
@@ -80,37 +89,8 @@ function renderPhotoGallery(photos) {
     }
   }
 
-  const markup = arrayPhoto
-    .map(photo => {
-      const previewImage = photo.webformatURL;
-      const alt = photo.tags;
-      const likes = photo.likes;
-      const views = photo.views;
-      const comments = photo.comments;
-      const downloads = photo.downloads;
-      const largeImage = photo.largeImageURL;
-      return `<div class="photo-card">
-      <a class="gallery__item gallery__link" href="${largeImage}">
-      <img class="gallery__image" src="${previewImage}" alt="${alt}" loading="lazy" />
-      </a>     
-    <div class="info">
-      <p class="info-item">
-        <b class="item">Likes</b><br>${likes}
-      </p>
-      <p class="info-item">
-        <b class="item">Views</b><br>${views}
-      </p>
-      <p class="info-item">
-        <b class="item">Comments</b><br>${comments}
-      </p>
-      <p class="info-item">
-        <b class="item">Downloads</b><br>${downloads}
-      </p>
-    </div>
-  </div>`;
-    })
-    .join('');
-  gallery.insertAdjacentHTML('beforeend', markup);
+  makeMarcup(arrayPhoto);
+
   btnLoadMore.style.visibility = 'visible';
   // установление scroll smooth со скроллом экрана вверх после пролистывания первой страницы
   if (page > 1) {
@@ -122,16 +102,6 @@ function renderPhotoGallery(photos) {
     });
   }
 
-  // подключение SimpleLightbox
-  const lightbox = new SimpleLightbox('.gallery a', {
-    captionDelay: 250,
-    widthRatio: 0.6,
-    heightRatio: 0.9,
-    scrollZoomFactor: 0.1,
-  });
-  // refresh lightbox при загрузке новой страницы галереи после первой. Зачем ?? Не очень понятно, вероятно для освобождения памяти??
-  if (page > 1) lightbox.refresh();
-
   // проверка и уведомление на окончание просмотра доступных изображений по фильтру с деактивацией кнопки Load More
   if (currentHits >= totalHits) {
     Notiflix.Notify.warning(
@@ -141,6 +111,45 @@ function renderPhotoGallery(photos) {
     return;
   }
 }
+
+function makeMarcup(arrayPhoto) {
+  const markup = arrayPhoto
+    .map(photo => {
+      const {
+        webformatURL,
+        tags,
+        likes,
+        views,
+        comments,
+        downloads,
+        largeImageURL,
+      } = photo;
+
+      return `<div class="photo-card">
+      <a class="gallery__item gallery__link" href="${photo.largeImageURL}">
+      <img class="gallery__image" src="${photo.webformatURL}" alt="${photo.tags}" loading="lazy" />
+      </a>     
+    <div class="info">
+      <p class="info-item">
+        <b class="item">Likes</b><br>${photo.likes}
+      </p>
+      <p class="info-item">
+        <b class="item">Views</b><br>${photo.views}
+      </p>
+      <p class="info-item">
+        <b class="item">Comments</b><br>${photo.comments}
+      </p>
+      <p class="info-item">
+        <b class="item">Downloads</b><br>${photo.downloads}
+      </p>
+    </div>
+  </div>`;
+    })
+    .join('');
+  gallery.insertAdjacentHTML('beforeend', markup);
+  lightbox.refresh();
+}
+
 // очистка галереи
 function clearGallery() {
   gallery.innerHTML = '';

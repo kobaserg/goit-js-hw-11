@@ -1,5 +1,4 @@
 export { fetchPhoto };
-import { renderPhotoGallery } from '.';
 const axios = require('axios');
 // получение коллекции изображений с бэкэнда по заданному фильтру и кол-ву изображений на одной странице
 async function fetchPhoto(name, page, perPage) {
@@ -11,7 +10,8 @@ async function fetchPhoto(name, page, perPage) {
     const response = await axios.get(
       `https://pixabay.com/api/?key=${API_KEY}&q=${name}${standartFilter}&page=${page}&per_page=${perPage}`
     );
-    renderPhotoGallery(response);
+    // renderPhotoGallery(response);
+    return response;
   } catch (error) {
     // обработка ошибки получения данных с бэкэнда
     console.error(error);
